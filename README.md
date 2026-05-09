@@ -198,8 +198,8 @@ mvn clean install
 
 ## 联系方式
 
-- GitHub：[您的GitHub地址]
-- 邮箱：your_email@example.com
+- GitHub：https://github.com/LQH-BJTU/CloudPlatform
+- 邮箱：208478579@qq.com
 
 ---
 
