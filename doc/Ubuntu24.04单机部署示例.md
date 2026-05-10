@@ -30,7 +30,7 @@
 使用 DevStack 部署工具，其特点包括：
 
 - **快速部署**：15-30 分钟即可完成全量安装
-- **版本新颖**：基于 git master 最新版本
+- **版本新颖**：基于 stable/2025.2 稳定版本（代号 Gazpacho）
 - **管理便捷**：使用 systemd 管理服务
 - **扩展性强**：支持插件扩展 OpenStack 服务
 
@@ -38,7 +38,7 @@
 
 | 主机名 | 管理IP | OpenStack IP | CPU | 内存 | 磁盘 | 操作系统 | 网卡 |
 |--------|--------|--------------|-----|------|------|---------|------|
-| devstack | 10.126.41.105 | 10.126.41.106 | 8C | 16G | 100G | Ubuntu 24.04 LTS | enp51s0f1（管理）、enp51s0f0（OpenStack） |
+| devstack | 10.126.41.106 | 10.126.41.105 | 8C | 16G | 100G | Ubuntu 24.04 LTS | enp51s0f0（管理）、enp51s0f1（OpenStack） |
 
 ### 网络架构图
 
@@ -55,8 +55,8 @@
               │                             │
               ▼                             ▼
      ┌─────────────┐               ┌─────────────┐
-     │ enp51s0f1   │               │ enp51s0f0   │
-     │ 10.126.41.105│               │ 10.126.41.106│
+     │ enp51s0f0   │               │ enp51s0f1   │
+     │ 10.126.41.106│               │ 10.126.41.105│
      │ (管理网卡)   │               │(OpenStack网卡)│
      └──────┬──────┘               └──────┬──────┘
             │                             │
@@ -85,8 +85,8 @@
 **网络说明**：
 - **外部网络**：10.126.41.0/24
 - **网关**：10.126.41.1
-- **管理IP（SSH）**：10.126.41.105（enp51s0f1）
-- **OpenStack IP**：10.126.41.106（enp51s0f0）
+- **管理IP（SSH）**：10.126.41.106（enp51s0f0）
+- **OpenStack IP**：10.126.41.105（enp51s0f1）
 - **浮动IP池**：10.126.41.200 - 10.126.41.210
 
 ## 安装步骤
@@ -137,10 +137,10 @@ network:
   version: 2
   ethernets:
     # 管理网卡 - 用于 SSH 远程连接
-    enp51s0f1:
+    enp51s0f0:
       dhcp4: false
       addresses:
-        - 10.126.41.105/24
+        - 10.126.41.106/24
       nameservers:
         addresses:
           - 223.5.5.5
@@ -150,10 +150,10 @@ network:
           via: 10.126.41.1
 
     # OpenStack 网卡 - 用于虚拟机网络和浮动IP
-    enp51s0f0:
+    enp51s0f1:
       dhcp4: false
       addresses:
-        - 10.126.41.106/24
+        - 10.126.41.105/24
 EOF
 ```
 
@@ -204,7 +204,7 @@ cat > local.conf << EOF
 GIT_BASE="https://github.com"
 
 # OpenStack 服务绑定地址（使用 OpenStack 网卡）
-HOST_IP=10.126.41.106
+HOST_IP=10.126.41.105
 DEST=/opt/stack/
 LOGDIR=\$DEST/logs
 LOGFILE=\$LOGDIR/stack.sh.log
@@ -216,7 +216,7 @@ RABBIT_PASSWORD=\$ADMIN_PASSWORD
 SERVICE_PASSWORD=\$ADMIN_PASSWORD
 
 # 服务主机配置
-SERVICE_HOST=10.126.41.106
+SERVICE_HOST=10.126.41.105
 MYSQL_HOST=\$SERVICE_HOST
 RABBIT_HOST=\$SERVICE_HOST
 GLANCE_HOSTPORT=\$SERVICE_HOST:9292
@@ -226,7 +226,7 @@ Q_USE_SECGROUP=True
 FLOATING_RANGE="10.126.41.0/24"
 Q_FLOATING_ALLOCATION_POOL=start=10.126.41.200,end=10.126.41.210
 PUBLIC_NETWORK_GATEWAY="10.126.41.1"
-PUBLIC_INTERFACE=enp51s0f0
+PUBLIC_INTERFACE=enp51s0f1
 
 # Open vSwitch 配置
 Q_USE_PROVIDERNET_FOR_PUBLIC=True
@@ -240,17 +240,17 @@ EOF
 
 | 参数 | 说明 |
 |------|------|
-| HOST_IP | OpenStack 服务绑定地址（10.126.41.106） |
+| HOST_IP | OpenStack 服务绑定地址（10.126.41.105） |
 | ADMIN_PASSWORD | OpenStack admin 和 demo 用户密码 |
 | DATABASE_PASSWORD | MySQL 数据库密码 |
 | RABBIT_PASSWORD | RabbitMQ 消息队列密码 |
 | FLOATING_RANGE | 浮动 IP 地址池（10.126.41.0/24） |
-| PUBLIC_INTERFACE | OpenStack 物理网卡名称（enp51s0f0） |
+| PUBLIC_INTERFACE | OpenStack 物理网卡名称（enp51s0f1） |
 | PUBLIC_NETWORK_GATEWAY | 外部网络网关（10.126.41.1） |
 
 **双网卡部署说明**：
-- **enp51s0f1（管理网卡）**：IP 10.126.41.105，用于 SSH 远程连接和系统管理
-- **enp51s0f0（OpenStack 网卡）**：IP 10.126.41.106，用于虚拟机网络和浮动 IP
+- **enp51s0f0（管理网卡）**：IP 10.126.41.106，用于 SSH 远程连接和系统管理
+- **enp51s0f1（OpenStack 网卡）**：IP 10.126.41.105，用于虚拟机网络和浮动 IP
 
 ### 第六步：执行部署
 
@@ -274,7 +274,7 @@ openstack image list
 打开浏览器访问：
 
 ```bash
-http://10.126.41.106/dashboard
+http://10.126.41.105/dashboard
 ```
 
 - 用户名：admin 或 demo
