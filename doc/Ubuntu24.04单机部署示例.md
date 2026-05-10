@@ -111,13 +111,15 @@ echo "stack ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/stack
 
 ### 第四步：下载 DevStack
 
-切换到 stack 用户并克隆 DevStack 仓库：
+切换到 stack 用户并克隆 DevStack 仓库，指定使用 **stable/2025.2** 稳定版本：
 
 ```bash
 sudo -u stack -i
-git clone https://opendev.org/openstack/devstack
+git clone -b stable/2025.2 https://opendev.org/openstack/devstack
 cd devstack
 ```
+
+> **版本说明**：stable/2025.2 是 OpenStack 2025 年的第二个稳定版本（代号 Gazpacho），包含了最新的功能改进和安全修复。
 
 ### 第五步：配置 local.conf
 
