@@ -45,11 +45,11 @@
 ```
                     ┌─────────────────┐
                     │     Router      │
-                    │  10.126.41.1   │
+                    │  10.126.40.1   │
                     │     Gateway     │
                     └────────┬────────┘
                              │
-         外部网络: 10.126.41.0/24
+         外部网络: 10.126.40.0/21
                              │
               ┌──────────────┴──────────────┐
               │                             │
@@ -83,8 +83,8 @@
 ```
 
 **网络说明**：
-- **外部网络**：10.126.41.0/24
-- **网关**：10.126.41.1
+- **外部网络**：10.126.40.0/21（子网掩码 21 位）
+- **网关**：10.126.40.1
 - **管理IP（SSH）**：10.126.41.106（enp51s0f0）
 - **OpenStack IP**：10.126.41.105（enp51s0f1）
 - **浮动IP池**：10.126.41.200 - 10.126.41.210
@@ -140,20 +140,20 @@ network:
     enp51s0f0:
       dhcp4: false
       addresses:
-        - 10.126.41.106/24
+        - 10.126.41.106/21
       nameservers:
         addresses:
           - 223.5.5.5
           - 223.6.6.6
       routes:
         - to: default
-          via: 10.126.41.1
+          via: 10.126.40.1
 
     # OpenStack 网卡 - 用于虚拟机网络和浮动IP
     enp51s0f1:
       dhcp4: false
       addresses:
-        - 10.126.41.105/24
+        - 10.126.41.105/21
 EOF
 ```
 
@@ -223,9 +223,9 @@ GLANCE_HOSTPORT=\$SERVICE_HOST:9292
 
 # Neutron 网络配置
 Q_USE_SECGROUP=True
-FLOATING_RANGE="10.126.41.0/24"
+FLOATING_RANGE="10.126.40.0/21"
 Q_FLOATING_ALLOCATION_POOL=start=10.126.41.200,end=10.126.41.210
-PUBLIC_NETWORK_GATEWAY="10.126.41.1"
+PUBLIC_NETWORK_GATEWAY="10.126.40.1"
 PUBLIC_INTERFACE=enp51s0f1
 
 # Open vSwitch 配置
@@ -244,9 +244,9 @@ EOF
 | ADMIN_PASSWORD | OpenStack admin 和 demo 用户密码 |
 | DATABASE_PASSWORD | MySQL 数据库密码 |
 | RABBIT_PASSWORD | RabbitMQ 消息队列密码 |
-| FLOATING_RANGE | 浮动 IP 地址池（10.126.41.0/24） |
+| FLOATING_RANGE | 浮动 IP 地址池（10.126.40.0/21） |
 | PUBLIC_INTERFACE | OpenStack 物理网卡名称（enp51s0f1） |
-| PUBLIC_NETWORK_GATEWAY | 外部网络网关（10.126.41.1） |
+| PUBLIC_NETWORK_GATEWAY | 外部网络网关（10.126.40.1） |
 
 **双网卡部署说明**：
 - **enp51s0f0（管理网卡）**：IP 10.126.41.106，用于 SSH 远程连接和系统管理
