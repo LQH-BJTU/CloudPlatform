@@ -36,52 +36,58 @@
 
 ### 节点规划
 
-| 主机名 | IP 地址 | CPU | 内存 | 磁盘 | 操作系统 | 网卡 |
-|--------|---------|-----|------|------|---------|------|
-| devstack | 192.168.72.33/24 | 8C | 16G | 100G | Ubuntu 24.04 LTS | ens33 |
+| 主机名 | 管理IP | OpenStack IP | CPU | 内存 | 磁盘 | 操作系统 | 网卡 |
+|--------|--------|--------------|-----|------|------|---------|------|
+| devstack | 10.126.41.105 | 10.126.41.106 | 8C | 16G | 100G | Ubuntu 24.04 LTS | enp51s0f1（管理）、enp51s0f0（OpenStack） |
 
 ### 网络架构图
 
 ```
                     ┌─────────────────┐
                     │     Router      │
-                    │  192.168.72.8   │
+                    │  10.126.41.1   │
                     │     Gateway     │
                     └────────┬────────┘
                              │
-         外部网络: 192.168.72.0/24
+         外部网络: 10.126.41.0/24
                              │
-                             ▼
-                    ┌─────────────────┐
-                    │   devstack host │
-                    │                 │
-                    │    ┌─────────┐  │
-                    │    │  ens33  │  │
-                    │    │192.168.72.33│
-                    │    └─────────┘  │
-                    │                 │
-                    │  ┌───────────┐  │
-                    │  │   br-ex   │  │
-                    │  │ (外部网桥)│  │
-                    │  └────┬──────┘  │
-                    │       │         │
-                    │  ┌────▼────┐    │
-                    │  │   br-int│    │
-                    │  │ (内部网桥)│   │
-                    │  └────┬────┘    │
-                    │       │         │
-                    │  ┌────▼────┐    │
-                    │  │   VM    │    │
-                    │  │ instances│   │
-                    │  └─────────┘    │
-                    └─────────────────┘
+              ┌──────────────┴──────────────┐
+              │                             │
+              ▼                             ▼
+     ┌─────────────┐               ┌─────────────┐
+     │ enp51s0f1   │               │ enp51s0f0   │
+     │ 10.126.41.105│               │ 10.126.41.106│
+     │ (管理网卡)   │               │(OpenStack网卡)│
+     └──────┬──────┘               └──────┬──────┘
+            │                             │
+            └───────────┬─────────────────┘
+                        │
+               ┌────────▼────────┐
+               │   devstack host │
+               │                 │
+               │  ┌───────────┐  │
+               │  │   br-ex   │  │
+               │  │ (外部网桥)│  │
+               │  └────┬──────┘  │
+               │       │         │
+               │  ┌────▼────┐    │
+               │  │   br-int│    │
+               │  │ (内部网桥)│   │
+               │  └────┬────┘    │
+               │       │         │
+               │  ┌────▼────┐    │
+               │  │   VM    │    │
+               │  │ instances│   │
+               │  └─────────┘    │
+               └─────────────────┘
 ```
 
 **网络说明**：
-- **外部网络**：192.168.72.0/24
-- **网关**：192.168.72.8
-- **主机IP**：192.168.72.33
-- **浮动IP池**：192.168.72.220 - 192.168.72.230
+- **外部网络**：10.126.41.0/24
+- **网关**：10.126.41.1
+- **管理IP（SSH）**：10.126.41.105（enp51s0f1）
+- **OpenStack IP**：10.126.41.106（enp51s0f0）
+- **浮动IP池**：10.126.41.200 - 10.126.41.210
 
 ## 安装步骤
 
@@ -121,26 +127,33 @@ sed -i 's#http://cn.archive.ubuntu.com/#http://mirrors.aliyun.com/#g' /etc/apt/s
 ip a
 ```
 
-确认网卡名称为 **ens33**。
+确认网卡名称为 **enp51s0f0** 和 **enp51s0f1**。
 
-#### 编辑网络配置文件
+#### 编辑网络配置文件（双网卡配置）
 
 ```bash
 cat > /etc/netplan/00-installer-config.yaml << EOF
 network:
   version: 2
   ethernets:
-    ens33:
+    # 管理网卡 - 用于 SSH 远程连接
+    enp51s0f1:
       dhcp4: false
       addresses:
-        - 192.168.72.33/24
+        - 10.126.41.105/24
       nameservers:
         addresses:
           - 223.5.5.5
           - 223.6.6.6
       routes:
         - to: default
-          via: 192.168.72.8
+          via: 10.126.41.1
+
+    # OpenStack 网卡 - 用于虚拟机网络和浮动IP
+    enp51s0f0:
+      dhcp4: false
+      addresses:
+        - 10.126.41.106/24
 EOF
 ```
 
@@ -153,7 +166,8 @@ netplan apply
 #### 验证网络配置
 
 ```bash
-ip a show ens33
+ip a show enp51s0f0
+ip a show enp51s0f1
 ```
 
 ### 第三步：创建 Stack 用户
@@ -190,7 +204,7 @@ cat > local.conf << EOF
 GIT_BASE="https://github.com"
 
 # OpenStack 服务绑定地址（使用 OpenStack 网卡）
-HOST_IP=192.168.72.33
+HOST_IP=10.126.41.106
 DEST=/opt/stack/
 LOGDIR=\$DEST/logs
 LOGFILE=\$LOGDIR/stack.sh.log
@@ -202,17 +216,17 @@ RABBIT_PASSWORD=\$ADMIN_PASSWORD
 SERVICE_PASSWORD=\$ADMIN_PASSWORD
 
 # 服务主机配置
-SERVICE_HOST=192.168.72.33
+SERVICE_HOST=10.126.41.106
 MYSQL_HOST=\$SERVICE_HOST
 RABBIT_HOST=\$SERVICE_HOST
 GLANCE_HOSTPORT=\$SERVICE_HOST:9292
 
 # Neutron 网络配置
 Q_USE_SECGROUP=True
-FLOATING_RANGE="192.168.72.0/24"
-Q_FLOATING_ALLOCATION_POOL=start=192.168.72.220,end=192.168.72.230
-PUBLIC_NETWORK_GATEWAY="192.168.72.8"
-PUBLIC_INTERFACE=ens33
+FLOATING_RANGE="10.126.41.0/24"
+Q_FLOATING_ALLOCATION_POOL=start=10.126.41.200,end=10.126.41.210
+PUBLIC_NETWORK_GATEWAY="10.126.41.1"
+PUBLIC_INTERFACE=enp51s0f0
 
 # Open vSwitch 配置
 Q_USE_PROVIDERNET_FOR_PUBLIC=True
@@ -226,13 +240,17 @@ EOF
 
 | 参数 | 说明 |
 |------|------|
-| HOST_IP | OpenStack 服务绑定地址 |
+| HOST_IP | OpenStack 服务绑定地址（10.126.41.106） |
 | ADMIN_PASSWORD | OpenStack admin 和 demo 用户密码 |
 | DATABASE_PASSWORD | MySQL 数据库密码 |
 | RABBIT_PASSWORD | RabbitMQ 消息队列密码 |
-| FLOATING_RANGE | 浮动 IP 地址池 |
-| PUBLIC_INTERFACE | 物理网卡名称（ens33） |
-| PUBLIC_NETWORK_GATEWAY | 外部网络网关（192.168.72.8） |
+| FLOATING_RANGE | 浮动 IP 地址池（10.126.41.0/24） |
+| PUBLIC_INTERFACE | OpenStack 物理网卡名称（enp51s0f0） |
+| PUBLIC_NETWORK_GATEWAY | 外部网络网关（10.126.41.1） |
+
+**双网卡部署说明**：
+- **enp51s0f1（管理网卡）**：IP 10.126.41.105，用于 SSH 远程连接和系统管理
+- **enp51s0f0（OpenStack 网卡）**：IP 10.126.41.106，用于虚拟机网络和浮动 IP
 
 ### 第六步：执行部署
 
@@ -256,7 +274,7 @@ openstack image list
 打开浏览器访问：
 
 ```bash
-http://192.168.72.33/dashboard
+http://10.126.41.106/dashboard
 ```
 
 - 用户名：admin 或 demo
