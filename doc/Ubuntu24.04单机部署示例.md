@@ -1,10 +1,10 @@
-# Ubuntu 22.04 单机部署 OpenStack 教程
+# Ubuntu 24.04 单机部署 OpenStack 教程
 
-> 更新时间：2026-05-07
+> 更新时间：2026-05-10
 
 ## 概述
 
-本文档介绍如何在 Ubuntu 22.04 LTS 系统上使用 DevStack 快速部署 OpenStack 单节点环境。DevStack 是 OpenStack 官方推荐的开发环境部署工具，通过执行脚本自动完成 OpenStack 各组件的安装与配置。
+本文档介绍如何在 Ubuntu 24.04 LTS 系统上使用 DevStack 快速部署 OpenStack 单节点环境。DevStack 是 OpenStack 官方推荐的开发环境部署工具，通过执行脚本自动完成 OpenStack 各组件的安装与配置。
 
 ## 环境要求
 
@@ -19,7 +19,7 @@
 
 ### 软件要求
 
-- Ubuntu 22.04 LTS (Jammy)
+- Ubuntu 24.04 LTS
 - root 或 sudo 权限
 - 稳定的互联网连接
 
@@ -38,7 +38,7 @@
 
 | 主机名 | IP 地址 | CPU | 内存 | 磁盘 | 操作系统 | 网卡 |
 |--------|---------|-----|------|------|---------|------|
-| devstack | 192.168.72.33 | 8C | 16G | 100G | Ubuntu 22.04 LTS | ens33 |
+| devstack | 192.168.72.33 | 8C | 16G | 100G | Ubuntu 24.04 LTS | ens33 |
 
 ## 安装步骤
 
@@ -195,7 +195,7 @@ openstack image list
 
 打开浏览器访问：
 
-```
+```bash
 http://192.168.72.33/dashboard
 ```
 
@@ -238,7 +238,7 @@ source openrc
 
 ### 网络流量走向
 
-```
+```bash
 外部网络 <-> ens33 <-> br-ex <-> OpenStack 实例
 ```
 
