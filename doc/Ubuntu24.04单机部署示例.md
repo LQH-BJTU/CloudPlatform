@@ -36,9 +36,13 @@
 
 ### 节点规划
 
-| 主机名 | IP 地址 | CPU | 内存 | 磁盘 | 操作系统 | 网卡 |
-|--------|---------|-----|------|------|---------|------|
-| devstack | 192.168.72.33 | 8C | 16G | 100G | Ubuntu 24.04 LTS | ens33 |
+| 主机名 | 管理IP | OpenStack IP | CPU | 内存 | 磁盘 | 操作系统 | 网卡 |
+|--------|--------|--------------|-----|------|------|---------|------|
+| devstack | 192.168.1.100 | 192.168.72.33 | 8C | 16G | 100G | Ubuntu 24.04 LTS | ens33（管理）、ens37（OpenStack） |
+
+**网卡用途说明**：
+- **ens33**：管理网卡，用于 SSH 远程连接和系统管理
+- **ens37**：OpenStack 网卡，用于虚拟机网络、浮动IP和公共网络
 
 ## 安装步骤
 
@@ -72,24 +76,39 @@ sed -i 's#http://cn.archive.ubuntu.com/#http://mirrors.aliyun.com/#g' /etc/apt/s
 
 ### 第二步：网络配置
 
-#### 编辑网络配置文件
+#### 查看网卡信息
+
+```bash
+ip a
+```
+
+确认网卡名称（通常为 ens33、ens37 等）。
+
+#### 编辑网络配置文件（双网卡配置）
 
 ```bash
 cat > /etc/netplan/00-installer-config.yaml << EOF
 network:
   version: 2
   ethernets:
+    # 管理网卡 - 用于 SSH 远程连接
     ens33:
       dhcp4: false
       addresses:
-        - 192.168.72.33/24
+        - 192.168.1.100/24
       nameservers:
         addresses:
           - 223.5.5.5
           - 223.6.6.6
       routes:
         - to: default
-          via: 192.168.72.8
+          via: 192.168.1.1
+
+    # OpenStack 网卡 - 用于虚拟机网络
+    ens37:
+      dhcp4: false
+      addresses:
+        - 192.168.72.33/24
 EOF
 ```
 
@@ -97,6 +116,13 @@ EOF
 
 ```bash
 netplan apply
+```
+
+#### 验证网络配置
+
+```bash
+ip a show ens33
+ip a show ens37
 ```
 
 ### 第三步：创建 Stack 用户
@@ -132,7 +158,7 @@ cat > local.conf << EOF
 # Git 仓库源（网络较差时使用国内镜像）
 GIT_BASE="https://github.com"
 
-# 管理网络地址
+# OpenStack 服务绑定地址（使用 OpenStack 网卡）
 HOST_IP=192.168.72.33
 DEST=/opt/stack/
 LOGDIR=\$DEST/logs
@@ -154,8 +180,8 @@ GLANCE_HOSTPORT=\$SERVICE_HOST:9292
 Q_USE_SECGROUP=True
 FLOATING_RANGE="192.168.72.0/24"
 Q_FLOATING_ALLOCATION_POOL=start=192.168.72.220,end=192.168.72.230
-PUBLIC_NETWORK_GATEWAY="192.168.72.8"
-PUBLIC_INTERFACE=ens33
+PUBLIC_NETWORK_GATEWAY="192.168.72.1"
+PUBLIC_INTERFACE=ens37
 
 # Open vSwitch 配置
 Q_USE_PROVIDERNET_FOR_PUBLIC=True
@@ -169,12 +195,16 @@ EOF
 
 | 参数 | 说明 |
 |------|------|
-| HOST_IP | 本机 IP 地址 |
+| HOST_IP | OpenStack 服务绑定地址（使用 OpenStack 网卡 IP） |
 | ADMIN_PASSWORD | OpenStack admin 和 demo 用户密码 |
 | DATABASE_PASSWORD | MySQL 数据库密码 |
 | RABBIT_PASSWORD | RabbitMQ 消息队列密码 |
-| FLOATING_RANGE | 浮动 IP 地址池 |
-| PUBLIC_INTERFACE | 物理网卡名称 |
+| FLOATING_RANGE | 浮动 IP 地址池（OpenStack 网卡网段） |
+| PUBLIC_INTERFACE | OpenStack 物理网卡名称（ens37） |
+
+**双网卡部署说明**：
+- **ens33（管理网卡）**：IP 192.168.1.100，用于 SSH 远程连接和系统管理
+- **ens37（OpenStack 网卡）**：IP 192.168.72.33，用于虚拟机网络和浮动 IP
 
 ### 第六步：执行部署
 
