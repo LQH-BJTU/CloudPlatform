@@ -285,9 +285,23 @@ EOF
 
 ### 第七步：执行部署
 
+**使用 screen 会话部署（推荐）**：
+
 ```bash
+# 1. 切到 devstack 目录
+cd ~/devstack
+
+# 2. 新建 screen 会话
+screen -S devstack
+
+# 3. 在 screen 里直接跑部署，不用改任何 local.conf
 ./stack.sh
 ```
+
+**Screen 会话操作说明**：
+- 按 `Ctrl+A` 然后按 `D` 可以退出 screen 会话（部署继续在后台运行）
+- 使用 `screen -r devstack` 可以重新连接到会话
+- 使用 `Ctrl+A` 然后按 `K` 可以关闭当前 screen 会话
 
 部署过程需要 15-30 分钟，取决于网络连接速度。安装过程中会自动下载并编译所有组件。
 
