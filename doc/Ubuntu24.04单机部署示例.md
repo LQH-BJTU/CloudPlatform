@@ -196,19 +196,32 @@ chmod +x /opt/stack
 echo "stack ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/stack
 ```
 
-### 第四步：下载 DevStack
+### 第四步：配置国内阿里云 PIP 源
+
+切换到 stack 用户并配置 PIP 源，加速 Python 包下载：
+
+```bash
+sudo -u stack -i
+mkdir ~/.pip
+cat > ~/.pip/pip.conf << EOF
+[global]
+trusted-host=mirrors.aliyun.com
+index-url=https://mirrors.aliyun.com/pypi/simple/
+EOF
+```
+
+### 第五步：下载 DevStack
 
 切换到 stack 用户并克隆 DevStack 仓库，指定使用 **stable/2025.2** 稳定版本：
 
 ```bash
-sudo -u stack -i
 git clone -b stable/2025.2 https://opendev.org/openstack/devstack
 cd devstack
 ```
 
 > **版本说明**：stable/2025.2 是 OpenStack 2025 年的第二个稳定版本（代号 Gazpacho），包含了最新的功能改进和安全修复。
 
-### 第五步：配置 local.conf
+### 第六步：配置 local.conf
 
 在 devstack 目录下创建 local.conf 配置文件：
 
@@ -270,7 +283,7 @@ EOF
 - **enp51s0f0（管理网卡）**：IP 10.126.41.106，用于 SSH 远程连接和系统管理
 - **enp51s0f1（OpenStack 网卡）**：IP 10.126.41.105，用于虚拟机网络和浮动 IP
 
-### 第六步：执行部署
+### 第七步：执行部署
 
 ```bash
 ./stack.sh
@@ -278,7 +291,7 @@ EOF
 
 部署过程需要 15-30 分钟，取决于网络连接速度。安装过程中会自动下载并编译所有组件。
 
-### 第七步：验证部署
+### 第八步：验证部署
 
 #### 查看服务状态
 
@@ -296,9 +309,9 @@ http://10.126.41.105/dashboard
 ```
 
 - 用户名：admin 或 demo
-- 密码：secret（配置的密码）
+- 密码：suma123456（配置的密码）
 
-### 第八步：配置环境变量
+### 第九步：配置环境变量
 
 加载 OpenStack CLI 环境变量：
 
@@ -313,7 +326,7 @@ source openrc
 
 ### 浮动 IP 池说明
 
-本配置中浮动 IP 范围为 192.168.72.220 - 192.168.72.230，共 11 个可用 IP。
+本配置中浮动 IP 范围为 10.126.43.200 - 10.126.43.210，共 11 个可用 IP。
 
 ### 使用浮动 IP
 
@@ -335,7 +348,7 @@ source openrc
 ### 网络流量走向
 
 ```bash
-外部网络 <-> ens33 <-> br-ex <-> OpenStack 实例
+外部网络 <-> enp51s0f1 <-> br-ex <-> OpenStack 实例
 ```
 
 ## 常见问题
@@ -365,7 +378,7 @@ source openrc
 重启后可能导致 br-ex 网桥 IP 丢失，执行以下命令恢复：
 
 ```bash
-sudo ip addr flush ens33
+sudo ip addr flush enp51s0f1
 sudo systemctl restart devstack@*
 ```
 
