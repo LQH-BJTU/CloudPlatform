@@ -38,7 +38,7 @@
 
 | 主机名 | 管理IP | OpenStack IP | CPU | 内存 | 磁盘 | 操作系统 | 网卡 |
 |--------|--------|--------------|-----|------|------|---------|------|
-| devstack | 10.126.41.106 | 10.126.41.105 | 8C | 16G | 100G | Ubuntu 24.04 LTS | enp51s0f0（管理）、enp51s0f1（OpenStack） |
+| devstack | 10.126.41.64 | 10.126.41.63 | 8C | 16G | 100G | Ubuntu 24.04 LTS | enp51s0f0（管理）、enp51s0f1（OpenStack） |
 
 ### 网络架构图
 
@@ -63,7 +63,7 @@
               ▼                 ▼                 ▼
      ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
      │ enp51s0f0   │   │ enp51s0f1   │   │   其他主机   │
-     │ 10.126.41.106│   │ 10.126.41.105│   │  10.126.x.x │
+     │ 10.126.41.64 │   │ 10.126.41.63 │   │  10.126.x.x │
      │ (管理网卡)   │   │(OpenStack网卡)│   │             │
      └──────┬──────┘   └──────┬──────┘   └─────────────┘
             │                 │
@@ -93,9 +93,9 @@
 - **内网网段**：10.126.40.0/21（子网掩码 21 位，共 2046 个可用IP）
 - **网关内网IP**：10.126.40.1
 - **网关公网IP**：xxx（WAN口，用于访问外网）
-- **管理IP（SSH）**：10.126.41.106（enp51s0f0）
-- **OpenStack IP**：10.126.41.105（enp51s0f1）
-- **浮动IP池**：10.126.43.200 - 10.126.43.210
+- **管理IP（SSH）**：10.126.41.64（enp51s0f0）
+- **OpenStack IP**：10.126.41.63（enp51s0f1）
+- **浮动IP池**：10.126.47.220 - 10.126.47.230
 
 **路由转发规则**：
 | 目标网络 | 转发路径 | 是否走公网 |
@@ -156,7 +156,7 @@ network:
     enp51s0f0:
       dhcp4: false
       addresses:
-        - 10.126.41.106/21
+        - 10.126.41.64/21
       nameservers:
         addresses:
           - 223.5.5.5
@@ -169,7 +169,7 @@ network:
     enp51s0f1:
       dhcp4: false
       addresses:
-        - 10.126.41.105/21
+        - 10.126.41.63/21
 EOF
 ```
 
@@ -229,31 +229,32 @@ cd devstack
 cat > local.conf << EOF
 [[local|localrc]]
 
-# Git 仓库源（网络较差时使用国内镜像）
+# git base
 GIT_BASE="https://github.com"
 
 # OpenStack 服务绑定地址（使用 OpenStack 网卡）
-HOST_IP=10.126.41.105
-DEST=/opt/stack/
-LOGDIR=\$DEST/logs
-LOGFILE=\$LOGDIR/stack.sh.log
+HOST_IP=10.126.41.63
+DEST=/opt/stack
+LOGDIR=$DEST/logs
+LOGFILE=$LOGDIR/stack.sh.log
 
 # 认证密码配置
 ADMIN_PASSWORD=suma123456
-DATABASE_PASSWORD=\$ADMIN_PASSWORD
-RABBIT_PASSWORD=\$ADMIN_PASSWORD
-SERVICE_PASSWORD=\$ADMIN_PASSWORD
+DATABASE_PASSWORD=$ADMIN_PASSWORD
+RABBIT_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$ADMIN_PASSWORD
 
 # 服务主机配置
-SERVICE_HOST=10.126.41.105
-MYSQL_HOST=\$SERVICE_HOST
-RABBIT_HOST=\$SERVICE_HOST
-GLANCE_HOSTPORT=\$SERVICE_HOST:9292
+SERVICE_HOST=10.126.41.63
+MYSQL_HOST=$SERVICE_HOST
+RABBIT_HOST=$SERVICE_HOST
+GLANCE_HOSTPORT=$SERVICE_HOST:9292
+
 
 # Neutron 网络配置
 Q_USE_SECGROUP=True
 FLOATING_RANGE="10.126.40.0/21"
-Q_FLOATING_ALLOCATION_POOL=start=10.126.43.200,end=10.126.43.210
+Q_FLOATING_ALLOCATION_POOL=start=10.126.47.220,end=10.126.47.230
 PUBLIC_NETWORK_GATEWAY="10.126.40.1"
 PUBLIC_INTERFACE=enp51s0f1
 
@@ -270,39 +271,31 @@ EOF
 
 | 参数 | 说明 |
 |------|------|
-| HOST_IP | OpenStack 服务绑定地址（10.126.41.105） |
+| HOST_IP | OpenStack 服务绑定地址（10.126.41.63） |
 | ADMIN_PASSWORD | OpenStack admin 和 demo 用户密码 |
 | DATABASE_PASSWORD | MySQL 数据库密码 |
 | RABBIT_PASSWORD | RabbitMQ 消息队列密码 |
 | FLOATING_RANGE | 浮动 IP 地址池（10.126.40.0/21） |
-| Q_FLOATING_ALLOCATION_POOL | 浮动 IP 分配范围（10.126.43.200-10.126.43.210） |
+| Q_FLOATING_ALLOCATION_POOL | 浮动 IP 分配范围（10.126.47.220-10.126.47.230） |
 | PUBLIC_NETWORK_GATEWAY | 外部网络网关（10.126.40.1） |
 | PUBLIC_INTERFACE | OpenStack 物理网卡名称（enp51s0f1） |
 
 **双网卡部署说明**：
-- **enp51s0f0（管理网卡）**：IP 10.126.41.106，用于 SSH 远程连接和系统管理
-- **enp51s0f1（OpenStack 网卡）**：IP 10.126.41.105，用于虚拟机网络和浮动 IP
+- **enp51s0f0（管理网卡）**：IP 10.126.41.64，用于 SSH 远程连接和系统管理
+- **enp51s0f1（OpenStack 网卡）**：IP 10.126.41.63，用于虚拟机网络和浮动 IP
 
 ### 第七步：执行部署
 
 DevStack 部署有两种方式，可根据实际情况选择：
 
-#### 方式一：直接部署（适合本地终端或稳定连接）
+#### 方式一：直接部署（适合服务器直连终端）
 
-如果您在本地终端操作，或网络连接非常稳定，可以直接执行部署脚本：
+如果您在服务器连接的显示器下开启的终端部署，可以直接执行部署脚本：
 
 ```bash
 cd ~/devstack
 ./stack.sh
 ```
-
-**优点**：
-- 操作简单，无需额外工具
-- 实时查看部署日志输出
-
-**缺点**：
-- SSH 连接中断会导致部署失败
-- 关闭终端会中断部署进程
 
 #### 方式二：使用 screen 会话部署（推荐用于远程 SSH）
 
@@ -359,7 +352,7 @@ openstack image list
 打开浏览器访问：
 
 ```bash
-http://10.126.41.105/dashboard
+http://10.126.41.63/dashboard
 ```
 
 - 用户名：admin 或 demo
@@ -380,7 +373,7 @@ source openrc
 
 ### 浮动 IP 池说明
 
-本配置中浮动 IP 范围为 10.126.43.200 - 10.126.43.210，共 11 个可用 IP。
+本配置中浮动 IP 范围为 10.126.47.220 - 10.126.47.230，共 11 个可用 IP。
 
 ### 使用浮动 IP
 
