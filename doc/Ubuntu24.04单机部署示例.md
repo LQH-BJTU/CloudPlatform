@@ -218,31 +218,24 @@ EOF
 
 ```bash
 # 设置代理（替换为实际的代理地址和端口）
-export http_proxy="http://proxy.example.com:8080"
-export https_proxy="http://proxy.example.com:8080"
+export http_proxy="http://代理ip:7890"
+export https_proxy="http://代理ip:7890"
 
-# 如果代理需要认证
-export http_proxy="http://username:password@proxy.example.com:8080"
-export https_proxy="http://username:password@proxy.example.com:8080"
-
-# 设置不使用代理的内网地址
-export no_proxy="localhost,127.0.0.1,10.126.0.0/16"
 ```
 
 **代理配置说明**：
 - `http_proxy`：HTTP 协议代理
 - `https_proxy`：HTTPS 协议代理
-- `no_proxy`：不需要通过代理的地址列表（内网地址、本地地址）
 - 上述设置仅对当前终端会话有效，关闭终端后需要重新设置
 
 切换到 stack 用户并克隆 DevStack 仓库，指定使用 **stable/2025.2** 稳定版本：
 
 ```bash
-git clone -b stable/2025.2 https://opendev.org/openstack/devstack
+git clone https://opendev.org/openstack/devstack
 cd devstack
 ```
 
-> **版本说明**：stable/2025.2 是 OpenStack 2025 年的第二个稳定版本（代号 Gazpacho），包含了最新的功能改进和安全修复。
+> **版本说明**：stable/2025.2 是 OpenStack 2025 年的第二个稳定版本（代号 Flamingo），包含了最新的功能改进和安全修复。
 
 ### 第六步：配置 local.conf
 
