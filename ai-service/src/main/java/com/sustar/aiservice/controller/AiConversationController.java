@@ -25,8 +25,10 @@ public class AiConversationController {
 
     @GetMapping("/{id}")
     public Result<AiConversationVO> getConversation(@PathVariable Long id) {
+
         AiConversationDTO dto = aiConversationService.getConversationById(id);
-        return Result.success(convertToVO(dto));
+        AiConversationVO vo = convertToVO(dto);
+        return Result.success(vo);
     }
 
     @GetMapping("/list")

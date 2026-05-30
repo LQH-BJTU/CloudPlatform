@@ -1,0 +1,31 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: collector-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+    properties:
+      topic:
+        vm-metrics: openstack-vm-metrics
+        security-groups: openstack-security-groups
+        vm-info: openstack-vm-info
+
+openstack:
+  auth-url: http://10.126.41.229/identity/v3
+  username: admin
+  password: suma123456
+  project-name: admin
+  user-domain-id: default
+  project-domain-id: default
+  region: RegionOne
+
+collector:
+  polling-interval: 60000
+  enabled: true

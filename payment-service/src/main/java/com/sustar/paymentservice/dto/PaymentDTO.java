@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 支付数据传输对象
@@ -23,11 +24,39 @@ public class PaymentDTO implements Serializable {
 
     private String paymentNo;
 
-    private String orderId;
+    private String orderNo;
+
+    private Long orderId;
 
     private String userId;
 
     private BigDecimal amount;
 
-    private Integer paymentType;
+    private String payChannel;
+
+    private String payMethod;
+
+    private Integer status;
+
+    private String statusDesc;
+
+    private String subject;
+
+    private String body;
+
+    private String thirdPartyNo;
+
+    private LocalDateTime payTime;
+
+    private LocalDateTime expireTime;
+
+    private String clientIp;
+
+    private String returnUrl;
+
+    private String notifyUrl;
+
+    private LocalDateTime createTime;
+
+    private LocalDateTime updateTime;
 }

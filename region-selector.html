@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地域选择器 - 可视化展示</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 10px 40px rgba(102, 126, 234, 0.15);
+            --hover-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --bg-light: #f7fafc;
+            --border-color: #e2e8f0;
+            --success-color: #48bb78;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 20px 35px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .stat-item .number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-item .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .region-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 30px;
+        }
+
+        .region-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .region-card:nth-child(1) { animation-delay: 0.1s; }
+        .region-card:nth-child(2) { animation-delay: 0.2s; }
+        .region-card:nth-child(3) { animation-delay: 0.3s; }
+        .region-card:nth-child(4) { animation-delay: 0.4s; }
+        .region-card:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .region-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .region-card-header {
+            padding: 24px 28px;
+            background: var(--primary-gradient);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .region-card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        }
+
+        .region-card-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        .region-card-header .region-code {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+        }
+
+        .region-card-body {
+            padding: 20px 28px 28px;
+        }
+
+        .area-count {
+            display: inline-block;
+            background: var(--bg-light);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 18px;
+        }
+
+        .area-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+
+        .area-item {
+            padding: 14px 16px;
+            background: var(--bg-light);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .area-item:hover {
+            border-color: #667eea;
+            background: white;
+            transform: scale(1.02);
+        }
+
+        .area-item.selected {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: #667eea;
+        }
+
+        .area-item .area-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .area-item .area-code {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .area-item .check-icon {
+            display: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            background: var(--success-color);
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            line-height: 20px;
+            text-align: center;
+        }
+
+        .area-item {
+            position: relative;
+        }
+
+        .area-item.selected .check-icon {
+            display: block;
+        }
+
+        .selection-info {
+            margin-top: 40px;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .selection-info h3 {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .selected-tag .remove {
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .selected-tag .remove:hover {
+            opacity: 1;
+        }
+
+        .empty-selection {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 40px;
+            color: #e53e3e;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .region-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 地域选择器</h1>
+            <p>选择目标地域，查看大区与地域的层级关系</p>
+        </div>
+
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item">
+                <div class="number" id="regionCount">-</div>
+                <div class="label">大区数量</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" id="areaCount">-</div>
+                <div class="label">地域数量</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" id="selectedCount">0</div>
+                <div class="label">已选择</div>
+            </div>
+        </div>
+
+        <div id="regionGrid" class="region-grid">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <div class="selection-info" id="selectionInfo" style="display: none;">
+            <h3>📋 当前选择</h3>
+            <div class="selected-tags" id="selectedTags">
+                <span class="empty-selection">尚未选择任何地域</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api/ecs/regions';
+
+        let allAreas = [];
+        let selectedAreas = new Set();
+
+        async function fetchRegionData() {
+            try {
+                const response = await fetch(`${API_BASE}/area-list`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.code === 200) {
+                    return data.data;
+                } else {
+                    throw new Error(data.message || '获取数据失败');
+                }
+            } catch (error) {
+                console.error('获取地域数据失败:', error);
+                return getMockData();
+            }
+        }
+
+        function getMockData() {
+            return [
+                {
+                    regionGroupName: '亚太-中国',
+                    regionGroupCode: 'apac-cn',
+                    areas: [
+                        { areaCode: 'cn-qingdao', displayName: '华北1（青岛）', selected: false, sortOrder: 1 },
+                        { areaCode: 'cn-beijing', displayName: '华北2（北京）', selected: false, sortOrder: 2 },
+                        { areaCode: 'cn-zhangjiakou', displayName: '华北3（张家口）', selected: false, sortOrder: 3 },
+                        { areaCode: 'cn-huhehaote', displayName: '华北5（呼和浩特）', selected: false, sortOrder: 4 },
+                        { areaCode: 'cn-shanghai', displayName: '华东1（上海）', selected: false, sortOrder: 5 },
+                        { areaCode: 'cn-hangzhou', displayName: '华东2（杭州）', selected: false, sortOrder: 6 },
+                        { areaCode: 'cn-nanjing', displayName: '华东3（南京）', selected: false, sortOrder: 7 },
+                        { areaCode: 'cn-guangzhou', displayName: '华南1（广州）', selected: false, sortOrder: 8 },
+                        { areaCode: 'cn-shenzhen', displayName: '华南2（深圳）', selected: false, sortOrder: 9 },
+                        { areaCode: 'cn-chengdu', displayName: '西南1（成都）', selected: false, sortOrder: 10 }
+                    ]
+                },
+                {
+                    regionGroupName: '亚太-其他',
+                    regionGroupCode: 'apac-other',
+                    areas: [
+                        { areaCode: 'jp-tokyo', displayName: '日本（东京）', selected: false, sortOrder: 1 },
+                        { areaCode: 'jp-osaka', displayName: '日本（大阪）', selected: false, sortOrder: 2 },
+                        { areaCode: 'kr-seoul', displayName: '韩国（首尔）', selected: false, sortOrder: 3 },
+                        { areaCode: 'sg-singapore', displayName: '新加坡', selected: false, sortOrder: 4 },
+                        { areaCode: 'au-sydney', displayName: '澳大利亚（悉尼）', selected: false, sortOrder: 5 },
+                        { areaCode: 'my-kualalumpur', displayName: '马来西亚（吉隆坡）', selected: false, sortOrder: 6 }
+                    ]
+                },
+                {
+                    regionGroupName: '欧洲与美洲',
+                    regionGroupCode: 'emea-us',
+                    areas: [
+                        { areaCode: 'us-west-1', displayName: '美国西部（硅谷）', selected: false, sortOrder: 1 },
+                        { areaCode: 'us-east-1', displayName: '美国东部（弗吉尼亚）', selected: false, sortOrder: 2 },
+                        { areaCode: 'uk-london', displayName: '英国（伦敦）', selected: false, sortOrder: 3 },
+                        { areaCode: 'de-frankfurt', displayName: '德国（法兰克福）', selected: false, sortOrder: 4 },
+                        { areaCode: 'fr-paris', displayName: '法国（巴黎）', selected: false, sortOrder: 5 }
+                    ]
+                },
+                {
+                    regionGroupName: '中东',
+                    regionGroupCode: 'mea',
+                    areas: [
+                        { areaCode: 'ae-dubai', displayName: '阿联酋（迪拜）', selected: false, sortOrder: 1 }
+                    ]
+                }
+            ];
+        }
+
+        function renderRegions(data) {
+            const grid = document.getElementById('regionGrid');
+            grid.innerHTML = '';
+
+            let totalRegions = data.length;
+            let totalAreas = data.reduce((sum, region) => sum + region.areas.length, 0);
+
+            document.getElementById('regionCount').textContent = totalRegions;
+            document.getElementById('areaCount').textContent = totalAreas;
+
+            allAreas = [];
+
+            data.forEach((region, index) => {
+                const card = document.createElement('div');
+                card.className = 'region-card';
+                card.style.animationDelay = `${index * 0.1}s`;
+
+                const areasHtml = region.areas.map(area => {
+                    allAreas.push(area);
+                    return `
+                        <div class="area-item" data-area-code="${area.areaCode}" onclick="toggleArea('${area.areaCode}')">
+                            <span class="check-icon">✓</span>
+                            <div class="area-name">${area.displayName}</div>
+                            <div class="area-code">${area.areaCode}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                card.innerHTML = `
+                    <div class="region-card-header">
+                        <h3>${region.regionGroupName}</h3>
+                        <div class="region-code">${region.regionGroupCode}</div>
+                    </div>
+                    <div class="region-card-body">
+                        <div class="area-count">${region.areas.length} 个地域</div>
+                        <div class="area-grid">
+                            ${areasHtml}
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            document.getElementById('selectionInfo').style.display = 'block';
+        }
+
+        function toggleArea(areaCode) {
+            const areaItem = document.querySelector(`.area-item[data-area-code="${areaCode}"]`);
+
+            if (selectedAreas.has(areaCode)) {
+                selectedAreas.delete(areaCode);
+                areaItem.classList.remove('selected');
+            } else {
+                selectedAreas.add(areaCode);
+                areaItem.classList.add('selected');
+            }
+
+            updateSelectionDisplay();
+        }
+
+        function removeSelection(areaCode) {
+            selectedAreas.delete(areaCode);
+            const areaItem = document.querySelector(`.area-item[data-area-code="${areaCode}"]`);
+            if (areaItem) {
+                areaItem.classList.remove('selected');
+            }
+            updateSelectionDisplay();
+        }
+
+        function updateSelectionDisplay() {
+            const countEl = document.getElementById('selectedCount');
+            const tagsEl = document.getElementById('selectedTags');
+
+            countEl.textContent = selectedAreas.size;
+
+            if (selectedAreas.size === 0) {
+                tagsEl.innerHTML = '<span class="empty-selection">尚未选择任何地域</span>';
+                return;
+            }
+
+            const selectedData = allAreas.filter(area => selectedAreas.has(area.areaCode));
+            tagsEl.innerHTML = selectedData.map(area => `
+                <span class="selected-tag">
+                    ${area.displayName}
+                    <span class="remove" onclick="removeSelection('${area.areaCode}')">×</span>
+                </span>
+            `).join('');
+        }
+
+        async function init() {
+            const data = await fetchRegionData();
+            renderRegions(data);
+        }
+
+        init();
+    </script>
+</body>
+</html>

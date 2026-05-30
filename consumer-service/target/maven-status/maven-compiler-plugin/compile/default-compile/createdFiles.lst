@@ -1,0 +1,3 @@
+com\sustar\consumerservice\mapper\VmInfoMapper.class
+com\sustar\consumerservice\consumer\VmInfoConsumer.class
+com\sustar\consumerservice\po\VmInfoPO.class

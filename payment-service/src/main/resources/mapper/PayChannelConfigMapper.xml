@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sustar.paymentservice.mapper.PayChannelConfigMapper">
+
+    <select id="selectByChannelCode" resultType="com.sustar.paymentservice.po.PayChannelConfigPO">
+        SELECT * FROM pay_channel_config WHERE channel_code = #{channelCode}
+    </select>
+
+    <select id="selectAllEnabled" resultType="com.sustar.paymentservice.po.PayChannelConfigPO">
+        SELECT * FROM pay_channel_config WHERE status = 1 ORDER BY sort_order
+    </select>
+
+</mapper>

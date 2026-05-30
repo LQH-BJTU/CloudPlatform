@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECS 快速购买</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 24px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #1a1a2e;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #666;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        /* 推荐套餐 */
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .package-card {
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .package-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+
+        .package-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+
+        .package-card.recommended::before {
+            content: '推荐';
+            position: absolute;
+            top: -10px;
+            right: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+
+        .package-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .package-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            height: 48px;
+            overflow: hidden;
+        }
+
+        .package-specs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .spec-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .spec-item svg {
+            width: 14px;
+            height: 14px;
+            color: #667eea;
+        }
+
+        .package-price {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .price-symbol {
+            font-size: 14px;
+            color: #ff4d4f;
+        }
+
+        .price-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff4d4f;
+        }
+
+        .price-unit {
+            font-size: 14px;
+            color: #999;
+        }
+
+        /* 镜像选择 */
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .image-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-card:hover {
+            border-color: #667eea;
+        }
+
+        .image-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .image-radio {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .image-card.selected .image-radio {
+            border-color: #667eea;
+        }
+
+        .image-card.selected .image-radio::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            border-radius: 50%;
+        }
+
+        .image-info {
+            flex: 1;
+        }
+
+        .image-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a2e;
+            margin-bottom: 2px;
+        }
+
+        .image-version {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .image-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        /* 预装应用 */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .app-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .app-card:hover {
+            border-color: #667eea;
+        }
+
+        .app-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .app-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .app-name {
+            font-size: 13px;
+            color: #333;
+            text-align: center;
+        }
+
+        .app-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* 配置摘要 */
+        .summary-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .summary-value {
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+            text-align: right;
+            max-width: 150px;
+        }
+
+        .summary-price {
+            padding: 16px 0;
+            border-top: 2px solid #f0f0f0;
+            margin-top: 8px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .total-label {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .total-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff4d4f;
+        }
+
+        .total-unit {
+            font-size: 14px;
+            color: #999;
+            margin-left: 4px;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 77, 79, 0.3);
+        }
+
+        .buy-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 付费类型 */
+        .billing-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .billing-card {
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .billing-card:hover {
+            border-color: #667eea;
+        }
+
+        .billing-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .billing-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+
+        .billing-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .billing-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+
+        /* 带宽模式 */
+        .bandwidth-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .bandwidth-card {
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .bandwidth-card:hover {
+            border-color: #667eea;
+        }
+
+        .bandwidth-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .bandwidth-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+
+        .bandwidth-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 20px;
+            color: #ff4d4f;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .packages-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .images-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .apps-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>云服务器 ECS</h1>
+            <p>快速购买 - 一站式配置您的云服务器</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <!-- 推荐套餐 -->
+                <div class="card">
+                    <div class="card-title">推荐套餐</div>
+                    <div class="packages-grid" id="packages-container"></div>
+                </div>
+
+                <!-- 镜像 -->
+                <div class="card">
+                    <div class="card-title">镜像</div>
+                    <div class="images-grid" id="images-container"></div>
+                </div>
+
+                <!-- 预装应用 -->
+                <div class="card">
+                    <div class="card-title">预装应用</div>
+                    <div class="apps-grid" id="apps-container"></div>
+                </div>
+
+                <!-- 付费类型 -->
+                <div class="card">
+                    <div class="card-title">付费类型</div>
+                    <div class="billing-options" id="billing-container"></div>
+                </div>
+
+                <!-- 带宽计费模式 -->
+                <div class="card">
+                    <div class="card-title">带宽计费模式</div>
+                    <div class="bandwidth-options" id="bandwidth-container"></div>
+                </div>
+            </div>
+
+            <!-- 配置摘要 -->
+            <div class="summary-card">
+                <div class="summary-title">配置摘要</div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">套餐</span>
+                    <span class="summary-value" id="summary-package">-</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">镜像</span>
+                    <span class="summary-value" id="summary-image">-</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">预装应用</span>
+                    <span class="summary-value" id="summary-app">-</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">付费类型</span>
+                    <span class="summary-value" id="summary-billing">-</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">带宽模式</span>
+                    <span class="summary-value" id="summary-bandwidth">-</span>
+                </div>
+
+                <div class="summary-price">
+                    <div class="price-row">
+                        <span class="total-label">总计</span>
+                        <div>
+                            <span class="total-price" id="total-price">0.00</span>
+                            <span class="total-unit">元/月</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="buy-btn" onclick="submitOrder()">确认下单</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api/ecs';
+
+        let selectedPackage = null;
+        let selectedImage = null;
+        let selectedApp = null;
+        let selectedBilling = null;
+        let selectedBandwidth = null;
+
+        async function fetchData(url) {
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+                if (result.code === 200) {
+                    return result.data;
+                } else {
+                    console.error('API Error:', result.message);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                return null;
+            }
+        }
+
+        function renderPackages(packages) {
+            const container = document.getElementById('packages-container');
+            if (!packages || packages.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = packages.map(pkg => `
+                <div class="package-card ${pkg.isRecommended ? 'recommended' : ''}" onclick="selectPackage(${JSON.stringify(pkg).replace(/"/g, '&quot;')})">
+                    <div class="package-name">${pkg.packageName}</div>
+                    <div class="package-desc">${pkg.description}</div>
+                    <div class="package-specs">
+                        <div class="spec-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>${pkg.vcpus}核</div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>${pkg.memory}GB</div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>${pkg.systemDisk}</div>
+                    </div>
+                    <div class="package-price">
+                        <span class="price-symbol">¥</span>
+                        <span class="price-value">${pkg.priceMonth}</span>
+                        <span class="price-unit">/月起</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderImages(images) {
+            const container = document.getElementById('images-container');
+            if (!images || images.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = images.map(img => `
+                <div class="image-card" onclick="selectImage(${JSON.stringify(img).replace(/"/g, '&quot;')})">
+                    <div class="image-radio"></div>
+                    <div class="image-info">
+                        <div class="image-name">${img.imageName}</div>
+                        <div class="image-version">${img.osVersion}</div>
+                    </div>
+                    <span class="image-tag">${img.isFree ? '免费' : '收费'}</span>
+                </div>
+            `).join('');
+
+            if (images.length > 0) {
+                const defaultImage = images.find(img => img.isDefault);
+                if (defaultImage) {
+                    selectImage(defaultImage);
+                }
+            }
+        }
+
+        function renderApps(apps) {
+            const container = document.getElementById('apps-container');
+            if (!apps || apps.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = apps.map(app => `
+                <div class="app-card" onclick="selectApp(${JSON.stringify(app).replace(/"/g, '&quot;')})">
+                    <div class="app-icon">${app.icon.charAt(0).toUpperCase()}</div>
+                    <div class="app-name">${app.appName}</div>
+                    <div class="app-time">${app.installTime}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderBillingTypes(types) {
+            const container = document.getElementById('billing-container');
+            if (!types || types.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = types.map(type => `
+                <div class="billing-card" onclick="selectBilling(${JSON.stringify(type).replace(/"/g, '&quot;')})">
+                    <div class="billing-name">${type.billingName}</div>
+                    <div class="billing-desc">${type.description}</div>
+                    ${type.isRecommended ? '<span class="billing-badge">推荐</span>' : ''}
+                </div>
+            `).join('');
+
+            if (types.length > 0) {
+                const recommended = types.find(t => t.isRecommended);
+                if (recommended) {
+                    selectBilling(recommended);
+                } else {
+                    selectBilling(types[0]);
+                }
+            }
+        }
+
+        function renderBandwidthModes(modes) {
+            const container = document.getElementById('bandwidth-container');
+            if (!modes || modes.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = modes.map(mode => `
+                <div class="bandwidth-card" onclick="selectBandwidth(${JSON.stringify(mode).replace(/"/g, '&quot;')})">
+                    <div class="bandwidth-name">${mode.modeName}</div>
+                    <div class="bandwidth-desc">${mode.description}</div>
+                </div>
+            `).join('');
+
+            if (modes.length > 0) {
+                const defaultMode = modes.find(m => m.isDefault);
+                if (defaultMode) {
+                    selectBandwidth(defaultMode);
+                } else {
+                    selectBandwidth(modes[0]);
+                }
+            }
+        }
+
+        function selectPackage(pkg) {
+            selectedPackage = pkg;
+            
+            document.querySelectorAll('.package-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.package-card').classList.add('selected');
+            
+            updateSummary();
+        }
+
+        function selectImage(img) {
+            selectedImage = img;
+            
+            document.querySelectorAll('.image-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.image-card').classList.add('selected');
+            
+            updateSummary();
+        }
+
+        function selectApp(app) {
+            selectedApp = app;
+            
+            document.querySelectorAll('.app-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.app-card').classList.add('selected');
+            
+            updateSummary();
+        }
+
+        function selectBilling(billing) {
+            selectedBilling = billing;
+            
+            document.querySelectorAll('.billing-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.billing-card').classList.add('selected');
+            
+            updateSummary();
+        }
+
+        function selectBandwidth(bandwidth) {
+            selectedBandwidth = bandwidth;
+            
+            document.querySelectorAll('.bandwidth-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.bandwidth-card').classList.add('selected');
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            document.getElementById('summary-package').textContent = selectedPackage ? selectedPackage.packageName : '-';
+            document.getElementById('summary-image').textContent = selectedImage ? selectedImage.imageName : '-';
+            document.getElementById('summary-app').textContent = selectedApp ? selectedApp.appName : '-';
+            document.getElementById('summary-billing').textContent = selectedBilling ? selectedBilling.billingName : '-';
+            document.getElementById('summary-bandwidth').textContent = selectedBandwidth ? selectedBandwidth.modeName : '-';
+            document.getElementById('total-price').textContent = selectedPackage ? selectedPackage.priceMonth.toFixed(2) : '0.00';
+        }
+
+        async function submitOrder() {
+            // 验证必填项
+            if (!selectedPackage) {
+                alert('请选择套餐');
+                return;
+            }
+            if (!selectedImage) {
+                alert('请选择镜像');
+                return;
+            }
+            if (!selectedBilling) {
+                alert('请选择付费类型');
+                return;
+            }
+            if (!selectedBandwidth) {
+                alert('请选择带宽模式');
+                return;
+            }
+
+            const buyBtn = document.querySelector('.buy-btn');
+            buyBtn.disabled = true;
+            buyBtn.innerHTML = '提交中...';
+
+            try {
+                // 1. 创建订单
+                const orderData = {
+                    userId: 'testUser001',
+                    totalAmount: selectedPackage.priceMonth,
+                    itemType: 'ECS',
+                    billingType: selectedBilling.billingCode,
+                    remark: 'ECS快速购买',
+                    items: [{
+                        itemCode: selectedPackage.packageCode,
+                        itemName: selectedPackage.packageName,
+                        itemType: 'ECS',
+                        quantity: 1,
+                        unitPrice: selectedPackage.priceMonth,
+                        specInfo: JSON.stringify({
+                            image: selectedImage.imageName,
+                            app: selectedApp?.appName || '',
+                            bandwidthMode: selectedBandwidth.modeCode
+                        })
+                    }]
+                };
+
+                console.log('【下单】开始创建订单，请求数据:', orderData);
+                
+                const orderResponse = await fetch('http://localhost:8082/api/order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                console.log('【下单】订单服务响应状态:', orderResponse.status);
+                const orderResult = await orderResponse.json();
+                console.log('【下单】订单服务返回数据:', orderResult);
+
+                if (orderResult.code !== 200) {
+                    throw new Error(orderResult.message || '创建订单失败');
+                }
+
+                const orderNo = orderResult.data.orderNo;
+                console.log('【下单】订单创建成功，订单号:', orderNo);
+
+                // 2. 创建支付订单
+                const paymentData = {
+                    orderNo: orderNo,
+                    userId: 'testUser001',
+                    amount: selectedPackage.priceMonth,
+                    payChannel: 'ALIPAY',
+                    payMethod: 'PC',
+                    subject: '云服务器ECS - ' + selectedPackage.packageName,
+                    body: '云服务器ECS包年包月',
+                    clientIp: '127.0.0.1',
+                    returnUrl: 'http://localhost:8085/ecs-fast-buy.html'
+                };
+
+                console.log('【下单】开始创建支付订单，请求数据:', paymentData);
+
+                const paymentResponse = await fetch('http://localhost:8083/api/payment/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                console.log('【下单】支付服务响应状态:', paymentResponse.status);
+                const paymentResult = await paymentResponse.json();
+                console.log('【下单】支付服务返回数据:', paymentResult);
+
+                if (paymentResult.code !== 200) {
+                    throw new Error(paymentResult.message || '创建支付订单失败');
+                }
+
+                const paymentNo = paymentResult.data.paymentNo;
+                console.log('【下单】支付订单创建成功，支付流水号:', paymentNo);
+
+                // 3. 跳转到支付页面
+                const paymentUrl = 'payment.html?paymentNo=' + paymentNo;
+                console.log('【下单】准备跳转到支付页面:', paymentUrl);
+                
+                // 使用 replace 避免浏览器拦截
+                window.location.replace(paymentUrl);
+
+            } catch (error) {
+                console.error('【下单】提交订单出错:', error);
+                alert('提交订单失败: ' + error.message);
+            } finally {
+                buyBtn.disabled = false;
+                buyBtn.innerHTML = '确认下单';
+            }
+        }
+
+        async function init() {
+            const [packages, images, apps, billingTypes, bandwidthModes] = await Promise.all([
+                fetchData(`${API_BASE}/packages`),
+                fetchData(`${API_BASE}/images`),
+                fetchData(`${API_BASE}/apps`),
+                fetchData(`${API_BASE}/billing-types`),
+                fetchData(`${API_BASE}/bandwidth-modes`)
+            ]);
+
+            renderPackages(packages);
+            renderImages(images);
+            renderApps(apps);
+            renderBillingTypes(billingTypes);
+            renderBandwidthModes(bandwidthModes);
+        }
+
+        init();
+    </script>
+</body>
+</html>

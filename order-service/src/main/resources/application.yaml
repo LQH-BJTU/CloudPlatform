@@ -1,3 +1,66 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: order-service
+
+  # 数据源配置 - 使用H2内存数据库用于测试
+  datasource:
+    url: jdbc:h2:mem:orderdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # H2控制台配置
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # SQL初始化配置
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+  # RabbitMQ配置 - 设置为非必需
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    publisher-returns: true
+    listener:
+      simple:
+        auto-startup: false
+
+  # Redis配置 - 设置为非必需
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+# 日志配置
+logging:
+  level:
+    com.sustar.orderservice: DEBUG
+    org.mybatis: DEBUG
+
+# 订单配置
+order:
+  timeout:
+    minutes: 30
+  auto-confirm-receipt:
+    days: 7

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sustar.paymentservice.mapper.RefundMapper">
+
+    <select id="selectByRefundNo" resultType="com.sustar.paymentservice.po.RefundPO">
+        SELECT * FROM refund_record WHERE refund_no = #{refundNo}
+    </select>
+
+    <select id="selectByPaymentNo" resultType="com.sustar.paymentservice.po.RefundPO">
+        SELECT * FROM refund_record WHERE payment_no = #{paymentNo} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByOrderNo" resultType="com.sustar.paymentservice.po.RefundPO">
+        SELECT * FROM refund_record WHERE order_no = #{orderNo} ORDER BY create_time DESC
+    </select>
+
+</mapper>

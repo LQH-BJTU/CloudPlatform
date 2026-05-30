@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .payment-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .payment-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 36px;
+        }
+
+        .payment-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .payment-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .order-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .amount-section {
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .amount-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .amount-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ff4d4f;
+        }
+
+        .amount-unit {
+            font-size: 16px;
+            color: #999;
+            margin-left: 4px;
+        }
+
+        .channel-section {
+            margin-bottom: 24px;
+        }
+
+        .channel-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .channel-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .channel-card {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .channel-card:hover {
+            border-color: #667eea;
+        }
+
+        .channel-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.08);
+        }
+
+        .channel-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .channel-name {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .pay-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pay-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 77, 79, 0.3);
+        }
+
+        .pay-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .tip {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .success-card {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            font-size: 48px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+        }
+
+        .success-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .success-btn {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .success-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="payment-card" id="payment-card">
+            <div class="payment-header">
+                <div class="payment-icon">💳</div>
+                <h1 class="payment-title">确认支付</h1>
+                <p class="payment-subtitle">请确认以下订单信息并完成支付</p>
+            </div>
+
+            <div class="order-info">
+                <div class="info-row">
+                    <span class="info-label">订单编号</span>
+                    <span class="info-value" id="order-no">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">支付流水号</span>
+                    <span class="info-value" id="payment-no">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">支付渠道</span>
+                    <span class="info-value">支付宝</span>
+                </div>
+            </div>
+
+            <div class="amount-section">
+                <div class="amount-label">应付金额</div>
+                <div>
+                    <span class="amount-value" id="amount">0.00</span>
+                    <span class="amount-unit">元</span>
+                </div>
+            </div>
+
+            <div class="channel-section">
+                <div class="channel-title">选择支付方式</div>
+                <div class="channel-options">
+                    <div class="channel-card selected" onclick="selectChannel('ALIPAY')">
+                        <div class="channel-icon">🌐</div>
+                        <div class="channel-name">支付宝</div>
+                    </div>
+                    <div class="channel-card" onclick="selectChannel('WECHAT')">
+                        <div class="channel-icon">💬</div>
+                        <div class="channel-name">微信支付</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="pay-btn" onclick="submitPayment()">立即支付</button>
+
+            <p class="tip">支付安全由银联提供保障</p>
+        </div>
+
+        <div class="payment-card success-card" id="success-card">
+            <div class="success-icon">✓</div>
+            <h1 class="success-title">支付成功</h1>
+            <p class="success-desc" id="success-message">您的订单已成功支付</p>
+            <button class="success-btn" onclick="goBack()">返回首页</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8083/api/payment';
+        const ORDER_API_BASE = 'http://localhost:8082/api/order';
+
+        let paymentNo = '';
+        let selectedChannel = 'ALIPAY';
+        let orderNo = '';
+        let amount = 0;
+
+        function getUrlParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function selectChannel(channel) {
+            selectedChannel = channel;
+            document.querySelectorAll('.channel-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.channel-card').classList.add('selected');
+        }
+
+        async function fetchPaymentInfo() {
+            paymentNo = getUrlParam('paymentNo');
+            if (!paymentNo) {
+                alert('无效的支付流水号');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/no/${paymentNo}`);
+                const result = await response.json();
+                if (result.code === 200) {
+                    const payment = result.data;
+                    orderNo = payment.orderNo;
+                    amount = payment.amount;
+
+                    document.getElementById('payment-no').textContent = paymentNo;
+                    document.getElementById('order-no').textContent = orderNo;
+                    document.getElementById('amount').textContent = amount.toFixed(2);
+                } else {
+                    alert('获取支付信息失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Fetch payment info error:', error);
+                alert('获取支付信息失败');
+            }
+        }
+
+        async function submitPayment() {
+            const payBtn = document.querySelector('.pay-btn');
+            payBtn.disabled = true;
+            payBtn.innerHTML = '<span class="loading-spinner"></span>支付中...';
+
+            try {
+                // 模拟支付处理
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // 调用支付回调接口（模拟支付成功）
+                const callbackResponse = await fetch(`${API_BASE}/notify/${selectedChannel}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `out_trade_no=${paymentNo}&trade_no=2026052722001440011122000000&total_amount=${amount}&trade_status=TRADE_SUCCESS`
+                });
+
+                const callbackResult = await callbackResponse.text();
+                console.log('Payment notify result:', callbackResult);
+
+                // 调用订单服务的支付回调
+                const orderCallbackResponse = await fetch(`${ORDER_API_BASE}/pay/callback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        orderNo: orderNo,
+                        payType: selectedChannel
+                    })
+                });
+
+                const orderCallbackResult = await orderCallbackResponse.json();
+                console.log('Order callback result:', orderCallbackResult);
+
+                // 显示成功页面
+                document.getElementById('payment-card').style.display = 'none';
+                document.getElementById('success-card').style.display = 'block';
+                document.getElementById('success-message').textContent = `您的订单 ${orderNo} 已成功支付 ¥${amount.toFixed(2)}`;
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('支付失败: ' + error.message);
+            } finally {
+                payBtn.disabled = false;
+                payBtn.innerHTML = '立即支付';
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'ecs-fast-buy.html';
+        }
+
+        fetchPaymentInfo();
+    </script>
+</body>
+</html>

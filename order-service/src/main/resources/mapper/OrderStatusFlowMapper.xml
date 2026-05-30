@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sustar.orderservice.mapper.OrderStatusFlowMapper">
+
+    <select id="selectByOrderId" resultType="com.sustar.orderservice.po.OrderStatusFlowPO">
+        SELECT * FROM order_status_flow WHERE order_id = #{orderId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByOrderNo" resultType="com.sustar.orderservice.po.OrderStatusFlowPO">
+        SELECT * FROM order_status_flow WHERE order_no = #{orderNo} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectLatestByOrderId" resultType="com.sustar.orderservice.po.OrderStatusFlowPO">
+        SELECT * FROM order_status_flow WHERE order_id = #{orderId} ORDER BY create_time DESC LIMIT 1
+    </select>
+
+</mapper>

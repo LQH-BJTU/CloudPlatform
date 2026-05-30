@@ -24,6 +24,8 @@ public class OrderQuery implements Serializable {
 
     private Integer status;
 
+    private Integer payStatus;
+
     private Integer pageNum;
 
     private Integer pageSize;

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.sustar.ecsservice.service.EcsServiceTest
+-------------------------------------------------------------------------------
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 19.80 s -- in com.sustar.ecsservice.service.EcsServiceTest

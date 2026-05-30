@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECS 快速购买</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 24px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e8e8;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #666;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e8e8;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #1890ff;
+            border-radius: 2px;
+        }
+
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .package-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: #fff;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .package-card:hover {
+            border-color: #1890ff;
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+        }
+
+        .package-card.selected {
+            border-color: #1890ff;
+            background: #f0f7ff;
+        }
+
+        .package-card.recommended::before {
+            content: '推荐';
+            position: absolute;
+            top: -1px;
+            right: 20px;
+            background: #1890ff;
+            color: white;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .package-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .package-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+
+        .package-specs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            padding: 12px 0;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .spec-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .spec-item svg {
+            width: 16px;
+            height: 16px;
+            color: #1890ff;
+        }
+
+        .package-price {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            margin-top: auto;
+        }
+
+        .price-symbol {
+            font-size: 14px;
+            color: #ff4d4f;
+        }
+
+        .price-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff4d4f;
+        }
+
+        .price-unit {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .image-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .image-card:hover {
+            border-color: #1890ff;
+        }
+
+        .image-card.selected {
+            border-color: #1890ff;
+            background: #f0f7ff;
+        }
+
+        .image-radio {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d9d9d9;
+            border-radius: 50%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .image-card.selected .image-radio {
+            border-color: #1890ff;
+        }
+
+        .image-card.selected .image-radio::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: #1890ff;
+            border-radius: 50%;
+        }
+
+        .image-info {
+            flex: 1;
+        }
+
+        .image-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .image-version {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .image-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .app-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .app-card:hover {
+            border-color: #1890ff;
+        }
+
+        .app-card.selected {
+            border-color: #1890ff;
+            background: #f0f7ff;
+        }
+
+        .app-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .app-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .app-icon-text {
+            width: 48px;
+            height: 48px;
+            background: #1890ff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .app-name {
+            font-size: 13px;
+            color: #333;
+            text-align: center;
+        }
+
+        .app-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .summary-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e8e8;
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .summary-value {
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+            text-align: right;
+            max-width: 150px;
+        }
+
+        .summary-price {
+            padding: 16px 0;
+            border-top: 2px solid #f0f0f0;
+            margin-top: 8px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .total-label {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .total-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff4d4f;
+        }
+
+        .total-unit {
+            font-size: 14px;
+            color: #999;
+            margin-left: 4px;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 14px;
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .buy-btn:hover {
+            background: #ff7875;
+        }
+
+        .billing-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .billing-card {
+            padding: 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .billing-card:hover {
+            border-color: #1890ff;
+        }
+
+        .billing-card.selected {
+            border-color: #1890ff;
+            background: #f0f7ff;
+        }
+
+        .billing-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .billing-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .billing-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            background: #1890ff;
+            color: white;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+
+        .bandwidth-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .bandwidth-card {
+            padding: 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .bandwidth-card:hover {
+            border-color: #1890ff;
+        }
+
+        .bandwidth-card.selected {
+            border-color: #1890ff;
+            background: #f0f7ff;
+        }
+
+        .bandwidth-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .bandwidth-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .packages-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .images-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .apps-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>云服务器 ECS</h1>
+            <p>快速购买 - 一站式配置您的云服务器</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="card">
+                    <div class="card-title">推荐套餐</div>
+                    <div class="packages-grid" id="packages-container">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">镜像</div>
+                    <div class="images-grid" id="images-container">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">预装应用（包含测试工具）</div>
+                    <div class="apps-grid" id="apps-container">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">付费类型</div>
+                    <div class="billing-options" id="billing-container">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">带宽计费模式</div>
+                    <div class="bandwidth-options" id="bandwidth-container">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-title">配置摘要</div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">套餐</span>
+                    <span class="summary-value" id="summary-package">-</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">镜像</span>
+                    <span class="summary-value" id="summary-image">-</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">预装应用</span>
+                    <span class="summary-value" id="summary-app">-</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">付费类型</span>
+                    <span class="summary-value" id="summary-billing">-</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">带宽模式</span>
+                    <span class="summary-value" id="summary-bandwidth">-</span>
+                </div>
+
+                <div class="summary-price">
+                    <div class="price-row">
+                        <span class="total-label">总计</span>
+                        <div>
+                            <span class="total-price" id="total-price">0.00</span>
+                            <span class="total-unit">元/月</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="buy-btn" onclick="submitOrder()">确认下单</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/ecs';
+
+        let selectedPackage = null;
+        let selectedImage = null;
+        let selectedApp = null;
+        let selectedBilling = null;
+        let selectedBandwidth = null;
+
+        async function fetchData(url) {
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+                if (result.code === 200) {
+                    return result.data;
+                } else {
+                    console.error('API Error:', result.message);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                return null;
+            }
+        }
+
+        function renderPackages(packages) {
+            const container = document.getElementById('packages-container');
+            if (!packages || packages.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = packages.map(pkg => `
+                <div class="package-card ${pkg.isRecommended ? 'recommended' : ''}" data-id="${pkg.id}">
+                    <div class="package-name">${pkg.packageName}</div>
+                    <div class="package-desc">${pkg.description}</div>
+                    <div class="package-specs">
+                        <div class="spec-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            ${pkg.vcpus}核
+                        </div>
+                        <div class="spec-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                <path d="M4 12h16"/>
+                            </svg>
+                            ${pkg.memory}GB
+                        </div>
+                    </div>
+                    <div class="package-price">
+                        <span class="price-symbol">¥</span>
+                        <span class="price-value">${pkg.priceMonth}</span>
+                        <span class="price-unit">/月起</span>
+                    </div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.package-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const pkg = packages.find(p => p.id === id);
+                    selectPackage(pkg, this);
+                });
+            });
+        }
+
+        function renderImages(images) {
+            const container = document.getElementById('images-container');
+            if (!images || images.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = images.map(img => `
+                <div class="image-card" data-id="${img.id}">
+                    <div class="image-radio"></div>
+                    <div class="image-info">
+                        <div class="image-name">${img.imageName}</div>
+                        <div class="image-version">${img.osVersion}</div>
+                    </div>
+                    <span class="image-tag">${img.isFree ? '免费' : '收费'}</span>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.image-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const img = images.find(i => i.id === id);
+                    selectImage(img, this);
+                });
+            });
+
+            const defaultImage = images.find(img => img.isDefault);
+            if (defaultImage) {
+                const defaultCard = container.querySelector(`[data-id="${defaultImage.id}"]`);
+                if (defaultCard) selectImage(defaultImage, defaultCard);
+            }
+        }
+
+        function renderApps(apps) {
+            const container = document.getElementById('apps-container');
+            if (!apps || apps.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = apps.map(app => {
+                let iconHtml;
+                if (app.appCode === 'jmeter') {
+                    // JMeter官方图标 - 红色圆形背景配白色JM字样
+                    iconHtml = `<div class="app-icon" style="background: #D62828; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 14px; font-family: Arial, sans-serif;">JM</div>`;
+                } else {
+                    iconHtml = `<div class="app-icon-text">${app.appName.charAt(0)}</div>`;
+                }
+                return `
+                    <div class="app-card" data-id="${app.id}">
+                        ${iconHtml}
+                        <div class="app-name">${app.appName}</div>
+                        <div class="app-time">${app.installTime}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.querySelectorAll('.app-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const app = apps.find(a => a.id === id);
+                    selectApp(app, this);
+                });
+            });
+        }
+
+        function renderBillingTypes(types) {
+            const container = document.getElementById('billing-container');
+            if (!types || types.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = types.map(type => `
+                <div class="billing-card" data-id="${type.id}">
+                    <div class="billing-name">${type.billingName}</div>
+                    <div class="billing-desc">${type.description}</div>
+                    ${type.isRecommended ? '<span class="billing-badge">推荐</span>' : ''}
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.billing-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const type = types.find(t => t.id === id);
+                    selectBilling(type, this);
+                });
+            });
+
+            const recommended = types.find(t => t.isRecommended);
+            if (recommended) {
+                const recCard = container.querySelector(`[data-id="${recommended.id}"]`);
+                if (recCard) selectBilling(recommended, recCard);
+            }
+        }
+
+        function renderBandwidthModes(modes) {
+            const container = document.getElementById('bandwidth-container');
+            if (!modes || modes.length === 0) {
+                container.innerHTML = '<div class="loading">加载失败</div>';
+                return;
+            }
+
+            container.innerHTML = modes.map(mode => `
+                <div class="bandwidth-card" data-id="${mode.id}">
+                    <div class="bandwidth-name">${mode.modeName}</div>
+                    <div class="bandwidth-desc">${mode.description}</div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.bandwidth-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const mode = modes.find(m => m.id === id);
+                    selectBandwidth(mode, this);
+                });
+            });
+
+            const defaultMode = modes.find(m => m.isDefault);
+            if (defaultMode) {
+                const defCard = container.querySelector(`[data-id="${defaultMode.id}"]`);
+                if (defCard) selectBandwidth(defaultMode, defCard);
+            }
+        }
+
+        function selectPackage(pkg, element) {
+            selectedPackage = pkg;
+            document.querySelectorAll('.package-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            updateSummary();
+        }
+
+        function selectImage(img, element) {
+            selectedImage = img;
+            document.querySelectorAll('.image-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            updateSummary();
+        }
+
+        function selectApp(app, element) {
+            selectedApp = app;
+            document.querySelectorAll('.app-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            updateSummary();
+        }
+
+        function selectBilling(billing, element) {
+            selectedBilling = billing;
+            document.querySelectorAll('.billing-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            updateSummary();
+        }
+
+        function selectBandwidth(bandwidth, element) {
+            selectedBandwidth = bandwidth;
+            document.querySelectorAll('.bandwidth-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            updateSummary();
+        }
+
+        function updateSummary() {
+            document.getElementById('summary-package').textContent = selectedPackage ? selectedPackage.packageName : '-';
+            document.getElementById('summary-image').textContent = selectedImage ? selectedImage.imageName : '-';
+            document.getElementById('summary-app').textContent = selectedApp ? selectedApp.appName : '-';
+            document.getElementById('summary-billing').textContent = selectedBilling ? selectedBilling.billingName : '-';
+            document.getElementById('summary-bandwidth').textContent = selectedBandwidth ? selectedBandwidth.modeName : '-';
+            document.getElementById('total-price').textContent = selectedPackage ? selectedPackage.priceMonth.toFixed(2) : '0.00';
+        }
+
+        function submitOrder() {
+            const order = {
+                package: selectedPackage,
+                image: selectedImage,
+                app: selectedApp,
+                billing: selectedBilling,
+                bandwidth: selectedBandwidth
+            };
+            console.log('Order submitted:', order);
+            alert('订单已提交！\n\n套餐: ' + (selectedPackage?.packageName || '-') + 
+                  '\n镜像: ' + (selectedImage?.imageName || '-') +
+                  '\n预装应用: ' + (selectedApp?.appName || '-') +
+                  '\n付费类型: ' + (selectedBilling?.billingName || '-') +
+                  '\n带宽模式: ' + (selectedBandwidth?.modeName || '-') +
+                  '\n\n总计: ¥' + (selectedPackage?.priceMonth || '0.00') + '/月');
+        }
+
+        async function init() {
+            const [packages, images, apps, billingTypes, bandwidthModes] = await Promise.all([
+                fetchData(`${API_BASE}/packages`),
+                fetchData(`${API_BASE}/images`),
+                fetchData(`${API_BASE}/apps`),
+                fetchData(`${API_BASE}/billing-types`),
+                fetchData(`${API_BASE}/bandwidth-modes`)
+            ]);
+
+            renderPackages(packages);
+            renderImages(images);
+            renderApps(apps);
+            renderBillingTypes(billingTypes);
+            renderBandwidthModes(bandwidthModes);
+        }
+
+        init();
+    </script>
+</body>
+</html>

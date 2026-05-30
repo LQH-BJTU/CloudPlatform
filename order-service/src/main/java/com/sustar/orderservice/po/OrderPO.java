@@ -13,8 +13,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 订单实体类
+ * 订单主表实体类
  * 对应数据库表order_info
+ * 存储订单的基本信息和状态
  */
 @Data
 @NoArgsConstructor
@@ -35,13 +36,27 @@ public class OrderPO implements Serializable {
 
     private BigDecimal payAmount;
 
+    private Long couponId;
+
+    private BigDecimal discountAmount;
+
     private Integer status;
+
+    private Integer payStatus;
+
+    private String payType;
+
+    private LocalDateTime payTime;
+
+    private String logisticsNo;
 
     private String receiverName;
 
     private String receiverPhone;
 
     private String receiverAddress;
+
+    private String remark;
 
     private LocalDateTime createTime;
 

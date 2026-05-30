@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 订单视图对象
@@ -30,7 +31,21 @@ public class OrderVO implements Serializable {
 
     private BigDecimal payAmount;
 
+    private Long couponId;
+
+    private BigDecimal discountAmount;
+
     private Integer status;
+
+    private String statusDesc;
+
+    private Integer payStatus;
+
+    private String payStatusDesc;
+
+    private String payType;
+
+    private LocalDateTime payTime;
 
     private String receiverName;
 
@@ -38,5 +53,12 @@ public class OrderVO implements Serializable {
 
     private String receiverAddress;
 
+    private String remark;
+
     private LocalDateTime createTime;
+
+    /**
+     * 订单明细列表
+     */
+    private List<OrderItemVO> items;
 }

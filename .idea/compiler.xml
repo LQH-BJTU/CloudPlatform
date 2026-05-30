@@ -2,27 +2,28 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile name="Annotation profile for order-service" enabled="true">
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
-        </processorPath>
-        <module name="order-service" />
+        <module name="auth-service" />
+        <module name="collector-service" />
+        <module name="coupon-service" />
+        <module name="ai-service" />
+        <module name="consumer-service" />
       </profile>
       <profile name="Annotation profile for payment-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar" />
         </processorPath>
-        <module name="auth-service" />
+        <module name="ecs-service" />
         <module name="payment-service" />
-        <module name="coupon-service" />
-        <module name="ai-service" />
+        <module name="order-service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -30,7 +31,10 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ai-service" options="-parameters" />
       <module name="auth-service" options="-parameters" />
+      <module name="collector-service" options="-parameters" />
+      <module name="consumer-service" options="-parameters" />
       <module name="coupon-service" options="-parameters" />
+      <module name="ecs-service" options="-parameters" />
       <module name="order-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />
     </option>
